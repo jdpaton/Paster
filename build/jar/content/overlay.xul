@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+
+
+<overlay id="pasterOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript"  src="chrome://paster/content/paster.js" />
+
+
+  <menupopup id="popup_tools">
+    <menuitem id="menu_paster"
+              label="Paster!"
+              oncommand="pasterExtension.pasteSelection(event)"
+              class="menu-iconic-wide"/>
+  </menupopup>
+    
+
+    <menupopup id="editorContextMenu">
+        <menuitem id="menu_pasterselection"
+                  label="Paster!"
+                  observes="cmd_pasterSelection"
+                  insertafter="editor-context-paste"
+                  class="menuitem-iconic-wide"
+                  oncommand="pasterExtension.pasteSelection(event)"/>
+    </menupopup>
+    
+
+    
+</overlay>

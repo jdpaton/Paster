@@ -1,0 +1,1 @@
+ pref("paster.symbol", "gist");

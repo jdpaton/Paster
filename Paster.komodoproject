@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="45c08978-ac4f-4ad0-82ef-87c0a70f69f5" kpf_version="5" name="Paster.komodoproject">
+<folder id="68933ea5-5575-4a98-ade6-c5508706df2f" idref="45c08978-ac4f-4ad0-82ef-87c0a70f69f5" name="Project">
+</folder>
+<file id="1b7bd21b-79b2-4292-9df8-c1585d831784" idref="68933ea5-5575-4a98-ade6-c5508706df2f" name="Configure.komodotool" url=".komodotools/Project/Configure.komodotool">
+</file>
+<file id="72342b6f-f0f3-4d57-8ab2-012d4dc114e8" idref="68933ea5-5575-4a98-ade6-c5508706df2f" name="chrome.manifest" url="chrome.manifest">
+</file>
+<file id="9ff5cb16-df1e-4044-aff7-88e8e90c797f" idref="68933ea5-5575-4a98-ade6-c5508706df2f" name="install.rdf" url="install.rdf">
+</file>
+<file id="bbb6d245-a347-44fe-b48a-788cc19f399c" idref="68933ea5-5575-4a98-ade6-c5508706df2f" name="defaults.js" url="defaults/preferences/defaults.js">
+</file>
+<file id="f9602df7-b26d-4de0-a66f-2bdae91c673a" idref="68933ea5-5575-4a98-ade6-c5508706df2f" name="setup.xul" url="_prj_internal_/setup.xul">
+</file>
+<preference-set idref="45c08978-ac4f-4ad0-82ef-87c0a70f69f5">
+  <boolean id="configured">1</boolean>
+</preference-set>
+</project>

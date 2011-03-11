@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<prefwindow onload="window.opener.close()" id="paster-prefs" title="Paster! Options" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="350" height="150">
+  <prefpane id="paster-pane" label="Paster! Settings" selected="true">
+    <preferences>
+      <preference id="pref_symbol" name="paster.symbol" type="string" />
+    </preferences>
+    <vbox flex="1">
+      <groupbox id="tag-complete-group" orient="vertical">
+        <caption>Paste Service</caption>
+        <description>Select your default pasting service:</description>
+        <menulist align="center" preference="pref_symbol">
+          <menupopup>
+            <menuitem label="Dpaste" value="dpaste" />
+            <menuitem label="Gist" value="gist" />
+            <menuitem label="Pastebin" value="pastebin" />
+          </menupopup>
+        </menulist>
+      </groupbox>
+    </vbox>
+  </prefpane>
+</prefwindow>
