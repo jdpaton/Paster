@@ -1,6 +1,8 @@
 var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("paster.");
 prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
+var notify_id_counter = 0;
+
 var utils = {
 
     notify: function(message, url) {
@@ -11,22 +13,26 @@ var utils = {
         //showAlertNotification(null, 'Paster! says...', message, false, '', null);
 
         var notifypref = prefs.getBoolPref("notify") || 0;
-        
-        if(notifypref)
-            ko.dialogs.prompt2('Paster!', message, url);
 
+        if (notifypref) {
+            ko.dialogs.prompt(null, message, url, message);
+        }
+    },
 
+    pingNotificationWidget: function(paste_content, message, uri) {
+        notify_id_counter++;
+        ko.notifications.add(message + ' ' + uri, ['paster'], notify_id_counter, {
+            severity: Components.interfaces.koINotification.SEVERITY_INFO
+        });
     },
 
     copyText: function(str) {
-
         Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper).copyString(str);
-
     },
 
     openInBrowser: function(url) {
-        if(prefs.getBoolPref("openinbrowser"))
-          ko.browse.openUrlInDefaultBrowser(url);
+        if (prefs.getBoolPref("openinbrowser"))
+            ko.browse.openUrlInDefaultBrowser(url);
 
     },
 
@@ -44,7 +50,7 @@ var utils = {
         eolText[Components.interfaces.koIDocument.EOL_CR] = '\r';
         eolText[Components.interfaces.koIDocument.EOL_CRLF] = '\r\n';
         eolText[Components.interfaces.koIDocument.EOL_LF] = '\n';
-        var newLineString = eolText[view.koDoc.new_line_endings]
+        var newLineString = eolText[view.koDoc.new_line_endings];
 
         var selectedText = "";
         if (scimoz.selectionMode == scimoz.SC_SEL_RECTANGLE) {
@@ -76,38 +82,27 @@ var utils = {
 
         return selectedText;
     },
-    
-    publicPrivate: function(){
-        
-            prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("paster.");
-            prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
+    publicPrivate: function() {
 
-            var symbol = prefs.getIntPref("pubpri") || 0;
+        prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("paster.");
+        prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
-            if(symbol == 0) return false; //public
-            if(symbol == 1) return true; //private
-            
-            //Default private
-            return true;
+        var symbol = prefs.getIntPref("pubpri") || 0;
+
+        if (symbol === 0) return false; //public
+        if (symbol === 1) return true; //private
+
+        //Default private
+        return true;
     },
-    
+
     escapeToScript: function(str) {
-
-
-         
         //prevent "escape from the quote" attacks by escaping quotes and line feed characters
         str = str.replace(/\u0009/ig, "\\t").replace(/\u000A/ig, "\\n").replace(/\u000D/ig, "\\r").replace(/\u0085/ig, "\\u0085");
-
-         
-         
         return str;
-        }
-    
-
-
-
-}
+    }
+};
 
 
 //
@@ -115,59 +110,49 @@ var utils = {
 // !! DISABLED, pocoo has been shut down. 
 //
 var pocoo = {
-    
+
     post: function() {
-        
+
         var selection = utils.getSelection();
-  
+
         var curLang = ko.views.manager.currentView.koDoc.language;
         var fileName = ko.views.manager.currentView.koDoc.file.baseName;
         var fileExt = fileName.split('.').pop();
-        
+
         var httpReq = new XMLHttpRequest();
         httpReq.open("post", "http://paste.pocoo.org/json/?method=pastes.newPaste", false);
         httpReq.setRequestHeader("content-type", "text/json");
-        
-    
-        
+
         var pubpri = utils.publicPrivate();
-        
+
         var jsonObj = {};
-        
+
         jsonObj.language = curLang;
         jsonObj.code = selection;
         jsonObj.filename = fileName;
-        
-        if (pubpri == true) {
-            jsonObj.private="True" ;
+
+        if (pubpri === true) {
+            jsonObj.private = "True";
         }
 
-    
-        
         sendString = JSON.stringify(jsonObj);
-        
+
         //sendString = utils.escapeToScript(sendString);
-        
+
         httpReq.setRequestHeader("Content-length", sendString.length);
         httpReq.setRequestHeader("Connection", "close");
         httpReq.send(sendString);
-        
+
         var res = httpReq.responseText;
         var json = JSON.parse(res);
-        
-        paste_id = json.data
-        
-         pasteUrl = "http://paste.pocoo.org/show/" + paste_id;
-        
+
+        paste_id = json.data;
+        pasteUrl = "http://paste.pocoo.org/show/" + paste_id;
         utils.copyText(pasteUrl);
-
         utils.notify('Pocoo is permanently offline', pasteUrl);
-
         utils.openInBrowser(pasteUrl);
-
     }
-    
-}
+};
 
 
 
@@ -188,45 +173,33 @@ var gist = {
         var fileName = ko.views.manager.currentView.koDoc.file.baseName;
         var fileExt = fileName.split('.').pop();
 
-
         var httpReq = new XMLHttpRequest();
-
         httpReq.open("post", "http://gist.github.com/api/v1/json/new", false);
         httpReq.setRequestHeader("content-type", "application/x-www-form-urlencoded");
 
         var isPrivate = utils.publicPrivate();
         var isPublic = 'private';
-        if (isPrivate == true ) isPublic = 'private';  
+        if (isPrivate === true) isPublic = 'private';
 
         var requestString = "file_ext={4}&description={1}&file_contents[gistfile1]={2}&file_name[gistfile1]={3}&action_button={5}";
         var sendString = requestString.replace("{1}", "Pasted form Komodo IDE").replace("{2}", text).replace("{3}", fileName).replace("{4}", fileExt).replace("{5}", isPublic);
-
 
         httpReq.setRequestHeader("Content-length", sendString.length);
         httpReq.setRequestHeader("Connection", "close");
         httpReq.send(sendString);
 
         var res = httpReq.responseText;
-
         var json = JSON.parse(res);
-
         repo_id = json.gists[0].repo;
 
         var gist = 'https://gist.github.com/' + repo_id;
 
         utils.copyText(gist);
-
+        utils.pingNotificationWidget(selection, 'Gist URL', gist);
         utils.notify('Gist URL', gist);
-
         utils.openInBrowser(gist);
-
-
-
-
     }
-
-
-}
+};
 
 //
 //--// paste.ubuntu.com
@@ -247,37 +220,30 @@ var ubuntu = {
         httpReq.setRequestHeader("Content-length", sendString.length);
         httpReq.setRequestHeader("Connection", "close");
 
+        httpReq.onload = function(event) {
+            if (httpReq.readyState == 4 && httpReq.status < 400) {
 
-
-        
-        httpReq.onload = function (event) {
-            if(httpReq.readyState == 4 && httpReq.status < 400){
-              
                 resp = httpReq.responseText;
                 var matches = [];
 
-                resp.replace(/<a class="pturl" href="([^"]+)">([^<]+)<\/a>/g, function () {
-                    matches.push(Array.prototype.slice.call(arguments, 1, 4))
+                resp.replace(/<a class="pturl" href="([^"]+)">([^<]+)<\/a>/g, function() {
+                    matches.push(Array.prototype.slice.call(arguments, 1, 4));
                 });
-                
+
                 var url = 'http://paste.ubuntu.com' + matches[0][0].replace('/plain', '');
                 utils.notify('Ubuntu paste url', url);
                 utils.openInBrowser(url);
-                
-            }else{
-              alert("Error loading page\n");
-              alert( httpReq.getAllResponseHeaders());
-              alert(httpReq.responseText);
-            }
-            
-          
-        };
-        
-        httpReq.send(sendString);
 
+            } else {
+                alert("Error loading page\n");
+                alert(httpReq.getAllResponseHeaders());
+                alert(httpReq.responseText);
+            }
+        };
+
+        httpReq.send(sendString);
     }
 };
-
 
 //
 //--// Sprunge.us
@@ -301,12 +267,13 @@ var sprunge = {
         httpReq.send(sendString);
 
         var url = this.getReturnURL(httpReq);
-        
+
         url = url.substring(0, url.length - 1).replace(/^\s+|\s+$/g, "").replace('"', "");
-   
+
         url = url + '?' + ko.views.manager.currentView.koDoc.language.toLowerCase() || '';
-      
+
         utils.copyText(url);
+        utils.pingNotificationWidget(selection, 'Sprunge URL:', url);
         utils.notify('Sprunged:', url);
         utils.openInBrowser(url);
     },
@@ -324,7 +291,7 @@ var pastebin = {
     post: function() {
         var selection = utils.getSelection();
 
-        if (selection == "") {
+        if (selection === "") {
             ko.dialogs.alert("No selection found");
             return;
         }
@@ -345,17 +312,16 @@ var pastebin = {
         httpReq.send(sendString);
 
         var url = this.getReturnURL(httpReq);
-        
 
         utils.copyText(url);
-        utils.notify('PasteBin URL [ ' + lang + ' ]', url );
+        utils.pingNotificationWidget(selection, 'Pastebin URL:', url);
+        utils.notify('PasteBin URL [ ' + lang + ' ]', url);
         utils.openInBrowser(url);
     },
 
     getReturnURL: function(httpReq) {
         return httpReq.responseText;
     },
-
 
     ko2pastebinLanguage: function() {
         var langMap = {};
@@ -398,17 +364,43 @@ var pastebin = {
         langMap["XUL"] = "xml";
 
         language = langMap[ko.views.manager.currentView.koDoc.language];
-        if (language == undefined) {
+        if (language === undefined) {
             return "text";
         }
         return language;
     }
-
 };
 
+var stackato = {
 
+    baseURL: 'http://paste.stacka.to',
 
+    post: function() {
+        var selection = utils.getSelection();
 
+        if (selection === "") {
+            ko.dialogs.alert("No selection found");
+            return;
+        }
+
+        var text = encodeURIComponent(selection);
+
+        var httpReq = new XMLHttpRequest();
+        httpReq.open("post", this.baseURL + '/documents', false);
+
+        httpReq.setRequestHeader("Content-length", selection.length);
+        httpReq.setRequestHeader("Connection", "close");
+        httpReq.send(selection);
+
+        var key = JSON.parse(httpReq.responseText).key;
+        var url = this.baseURL + '/' + key;
+
+        utils.copyText(url);
+        utils.pingNotificationWidget(selection, 'paste.stacka.to', url);
+        utils.notify('paste.stacka.to URL:', url);
+        utils.openInBrowser(url);
+    }
+};
 
 ///  The juice
 ///--------------
@@ -438,7 +430,6 @@ var pasterExtension = {
             prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("paster.");
             prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
-
             symbol = prefs.getCharPref("symbol").toUpperCase();
 
             if (symbol == "PASTEBIN") pastebin.post();
@@ -446,18 +437,14 @@ var pasterExtension = {
             else if (symbol == "GIST") gist.post();
             else if (symbol == "POCOO") pocoo.post();
             else if (symbol == "SPRUNGE") sprunge.post();
-
-
+            else if (symbol == "STACKATO") stackato.post();
         }
-
     },
-
-
 
     supportsCommand: function(cmd) {
         switch (cmd) {
-        case "cmd_pasterSelection":
-            return true;
+            case "cmd_pasterSelection":
+                return true;
         }
         return false;
     },
@@ -467,8 +454,8 @@ var pasterExtension = {
         var view = ko.views.manager && ko.views.manager.currentView;
 
         switch (cmd) {
-        case "cmd_pasterSelection":
-            if (view && view.getAttribute('type') == 'editor') {
+            case "cmd_pasterSelection":
+                if (view && view.getAttribute('type') == 'editor') {
                 var scimoz = view.scintilla.scimoz;
 
                 return scimoz.selectionStart != scimoz.selectionEnd;
@@ -479,8 +466,8 @@ var pasterExtension = {
 
     doCommand: function(cmd) {
         switch (cmd) {
-        case "cmd_pasterSelection":
-            this.pasteSelection();
+            case "cmd_pasterSelection":
+                this.pasteSelection();
             break;
         }
     },
@@ -508,7 +495,7 @@ var prefWatcher = {
         window.setInterval(this.refreshInformation, 10 * 60 * 1000);
     }
 
-}
+};
 
 // DOM events attach
 window.addEventListener("load", function(event) {

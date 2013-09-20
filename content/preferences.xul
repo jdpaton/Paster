@@ -10,7 +10,7 @@
 
 
     </preferences>
-     <checkbox label="Show url in notification box:"  
+     <checkbox label="Show url in notification box"  
          preference="pref_notify" />
      <checkbox label="Automatically open URL in browser:"  
          preference="pref_openinbrowser" />
@@ -20,11 +20,11 @@
         <description>Select a default pasting service:</description>
         <menulist align="center" preference="pref_symbol">
           <menupopup>
+            <menuitem label="Stackato" value="stackato" />
             <menuitem label="Ubuntu" value="ubuntu" />
             <menuitem label="Gist (Supports Private)" value="gist" />
             <menuitem label="Pastebin" value="pastebin" />
             <menuitem label="Sprunge" value="sprunge" />
-            <!-- <menuitem label="Pocoo" value="pocoo" /> -->
           </menupopup>
         </menulist>
       </groupbox>

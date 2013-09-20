@@ -19,14 +19,14 @@
   </menupopup>
     
 
-    <menupopup id="editorContextMenu">
-        <menuitem id="menu_pasterselection"
-                  label="Paster!"
-                  observes="cmd_pasterSelection"
-                  insertafter="editor-context-paste"
-                  class="menuitem-iconic-wide"
-                  oncommand="pasterExtension.pasteSelection(event)"/>
-    </menupopup>
+  <menupopup id="editorContextMenu">
+      <menuitem id="menu_pasterselection"
+                label="Paster!"
+                observes="cmd_pasterSelection"
+                insertafter="editor-context-paste"
+                class="menuitem-iconic-wide"
+                oncommand="pasterExtension.pasteSelection(event)"/>
+  </menupopup>
     
 
     

@@ -1,2 +1,0 @@
-content paster jar:paster.jar!/content/ xpcnativewrappers=yes
-overlay chrome://komodo/content/komodo.xul chrome://paster/content/overlay.xul
